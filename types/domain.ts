@@ -1,6 +1,9 @@
 export type TaskType = "deep" | "shallow" | "admin";
 export type TimeOfDayBucket = "morning" | "afternoon" | "evening";
 export type SchedulingMode = "auto" | "manual" | "unscheduled";
+export type GoalCategory = "mastery" | "resource" | "understanding" | "other";
+export type GoalStatus = "open" | "done" | "carried";
+export type CheckInKind = "midday" | "eod" | "custom";
 
 export type Task = {
   id: string;
@@ -76,4 +79,44 @@ export type FeedbackWithContext = NewFeedbackInput & {
   user_id: string;
   task_type: TaskType;
   start_time: string;
+};
+
+/** Weintraub-style daily SMART goal */
+export type DailyGoal = {
+  id: string;
+  user_id: string;
+  goal_date: string; // YYYY-MM-DD
+  title: string;
+  category: GoalCategory;
+  status: GoalStatus;
+  sort_order: number;
+  linked_task_id?: string | null;
+  carried_from_goal_id?: string | null;
+  created_at: string;
+};
+
+export type NewDailyGoalInput = {
+  title: string;
+  category?: GoalCategory;
+  sort_order?: number;
+};
+
+export type ReminderPreferences = {
+  user_id: string;
+  enabled: boolean;
+  morning_time: string; // HH:MM
+  nudge_times: string[]; // HH:MM list for in-day refocus
+  workdays_only: boolean;
+  updated_at: string;
+};
+
+export type DailyCheckIn = {
+  id: string;
+  user_id: string;
+  check_in_date: string; // YYYY-MM-DD
+  kind: CheckInKind;
+  flow_score: number;
+  stress_score: number;
+  progress_score: number;
+  created_at: string;
 };

@@ -66,9 +66,10 @@ function TasksContent() {
         setEditingTask(null);
         setNotice("Task updated. Existing schedule placement is unchanged.");
       } else {
-        const result = await createTaskFromForm(userId, values);
-        setNotice(result.schedule_block ? "Task created and placed on Today." : result.unscheduled_reason ?? "Task created in Today’s pending list.");
-        router.replace("/tasks");
+        const scheduleDate = searchParams.get("date") ?? undefined;
+        const result = await createTaskFromForm(userId, { ...values, schedule_date: scheduleDate ?? undefined });
+        setNotice(result.schedule_block ? "Task created and placed on the schedule." : result.unscheduled_reason ?? "Task created in the pending list.");
+        router.replace(scheduleDate ? `/dashboard?date=${scheduleDate}` : "/tasks");
       }
       await refresh(userId);
     } catch (caught) {

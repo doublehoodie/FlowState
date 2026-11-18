@@ -62,12 +62,20 @@ supabase/schema.sql   Database schema, indexes, and RLS policies
 
 ## Core Flow
 
-1. Log in or create an account at `/login`.
-2. Create typed tasks at `/tasks`.
-3. Generate today’s schedule at `/dashboard`.
-4. Start a scheduled block and submit focus/distraction feedback at `/feedback`.
-5. Feedback updates `performance_metrics` as rolling averages.
-6. Future schedules use learned bucket performance before falling back to defaults.
+1. Log in or create an account at `/login` (or use demo mode).
+2. On **Today**, set up to **3 SMART goals** (Weintraub-style morning ritual).
+3. Enable **browser nudges** (morning + in-day refocus) and optional check-ins for flow/stress/progress.
+4. Create typed tasks at `/tasks` and place them on the day schedule.
+5. Use **Week** (`/calendar`) for multi-day goals and blocks; open any day via `/dashboard?date=YYYY-MM-DD`.
+6. Carry unfinished goals forward; regenerate a day from learned metrics.
+7. Start a block and submit focus/distraction feedback at `/feedback`.
+
+## Required SQL (auth deploy)
+
+If your Supabase project was created earlier, run both:
+
+- `supabase/schema.sql` (or the incremental migrations under `supabase/migrations/`)
+- especially `supabase/migrations/20261118180000_goals_reminders_checkins.sql`
 
 ## AI-Ready Design
 

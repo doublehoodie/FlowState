@@ -7,6 +7,7 @@ import { signOut } from "@/services/authService";
 
 const links = [
   { href: "/dashboard", label: "Today" },
+  { href: "/calendar", label: "Week" },
   { href: "/tasks", label: "Tasks" },
   { href: "/feedback", label: "Feedback" }
 ];
@@ -35,12 +36,12 @@ export function AppShell({ children, title, eyebrow }: { children: React.ReactNo
         </button>
       </header>
       <section className="flex-1">{children}</section>
-      <nav className="fixed inset-x-4 bottom-4 z-10 mx-auto flex max-w-md rounded-full border border-white/70 bg-ink/90 p-2 shadow-soft backdrop-blur">
+      <nav className="fixed inset-x-4 bottom-4 z-10 mx-auto flex max-w-lg rounded-full border border-white/70 bg-ink/90 p-2 shadow-soft backdrop-blur">
         {links.map((link) => {
-          const active = pathname === link.href;
+          const active = pathname === link.href || (link.href !== "/dashboard" && pathname.startsWith(link.href));
           return (
             <Link
-              className={`flex-1 rounded-full px-3 py-3 text-center text-sm font-bold transition ${
+              className={`flex-1 rounded-full px-2 py-3 text-center text-xs font-bold transition sm:text-sm ${
                 active ? "bg-cream text-ink" : "text-cream/75 hover:text-cream"
               }`}
               href={link.href}

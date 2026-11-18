@@ -1,15 +1,27 @@
-import type { Feedback, PerformanceMetric, ScheduleBlock, Task } from "@/types/domain";
+import type {
+  DailyCheckIn,
+  DailyGoal,
+  Feedback,
+  PerformanceMetric,
+  ReminderPreferences,
+  ScheduleBlock,
+  Task
+} from "@/types/domain";
+import { DEMO_USER as demoUserConst } from "@/lib/demoUser";
 
-export const DEMO_USER = { id: "demo-user", email: "demo@flowstate.app" };
+export const DEMO_USER = demoUserConst;
 
 type DemoData = {
   tasks: Task[];
   schedule_blocks: Omit<ScheduleBlock, "task">[];
   feedback: Feedback[];
   performance_metrics: PerformanceMetric[];
+  daily_goals: DailyGoal[];
+  reminder_preferences: ReminderPreferences | null;
+  daily_check_ins: DailyCheckIn[];
 };
 
-const STORAGE_KEY = "flowstate-demo-v1";
+const STORAGE_KEY = "flowstate-demo-v2";
 let memoryFallback: DemoData | null = null;
 
 export function newId(): string {
@@ -31,7 +43,17 @@ function seed(): DemoData {
     tasks: sample.map((task) => ({ ...task, id: newId(), user_id: DEMO_USER.id, created_at: now })),
     schedule_blocks: [],
     feedback: [],
-    performance_metrics: []
+    performance_metrics: [],
+    daily_goals: [],
+    reminder_preferences: {
+      user_id: DEMO_USER.id,
+      enabled: true,
+      morning_time: "08:30",
+      nudge_times: ["11:00", "14:00", "16:30"],
+      workdays_only: true,
+      updated_at: now
+    },
+    daily_check_ins: []
   };
 }
 
@@ -39,7 +61,16 @@ export function readData(): DemoData {
   if (typeof window !== "undefined") {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw) as DemoData;
+      if (raw) {
+        const parsed = JSON.parse(raw) as DemoData;
+        return {
+          ...seed(),
+          ...parsed,
+          daily_goals: parsed.daily_goals ?? [],
+          daily_check_ins: parsed.daily_check_ins ?? [],
+          reminder_preferences: parsed.reminder_preferences ?? seed().reminder_preferences
+        };
+      }
     } catch {
       // private mode / blocked storage
     }
@@ -67,6 +98,7 @@ export function resetDemoData(): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem("flowstate-demo-v1");
   } catch {
     // ignore
   }
@@ -78,6 +110,16 @@ export function withTask(block: Omit<ScheduleBlock, "task">, tasks: Task[]): Sch
 
 export function todayRange(): { start: Date; end: Date } {
   const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 1);
+  return { start, end };
+}
+
+export function dayRangeFromKey(dateKey: string): { start: Date; end: Date } {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  const start = new Date();
+  start.setFullYear(y, m - 1, d);
   start.setHours(0, 0, 0, 0);
   const end = new Date(start);
   end.setDate(end.getDate() + 1);

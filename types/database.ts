@@ -1,4 +1,4 @@
-import type { TaskType, TimeOfDayBucket } from "@/types/domain";
+import type { CheckInKind, GoalCategory, GoalStatus, TaskType, TimeOfDayBucket } from "@/types/domain";
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
@@ -105,6 +105,78 @@ export type Database = {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["performance_metrics"]["Insert"]>;
+        Relationships: [];
+      };
+      daily_goals: {
+        Row: {
+          id: string;
+          user_id: string;
+          goal_date: string;
+          title: string;
+          category: GoalCategory;
+          status: GoalStatus;
+          sort_order: number;
+          linked_task_id: string | null;
+          carried_from_goal_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          goal_date: string;
+          title: string;
+          category?: GoalCategory;
+          status?: GoalStatus;
+          sort_order?: number;
+          linked_task_id?: string | null;
+          carried_from_goal_id?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["daily_goals"]["Insert"]>;
+        Relationships: [];
+      };
+      reminder_preferences: {
+        Row: {
+          user_id: string;
+          enabled: boolean;
+          morning_time: string;
+          nudge_times: string[];
+          workdays_only: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          enabled?: boolean;
+          morning_time?: string;
+          nudge_times?: string[];
+          workdays_only?: boolean;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["reminder_preferences"]["Insert"]>;
+        Relationships: [];
+      };
+      daily_check_ins: {
+        Row: {
+          id: string;
+          user_id: string;
+          check_in_date: string;
+          kind: CheckInKind;
+          flow_score: number;
+          stress_score: number;
+          progress_score: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          check_in_date: string;
+          kind: CheckInKind;
+          flow_score: number;
+          stress_score: number;
+          progress_score: number;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["daily_check_ins"]["Insert"]>;
         Relationships: [];
       };
     };

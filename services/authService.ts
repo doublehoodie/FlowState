@@ -1,5 +1,6 @@
 import { isDemoMode } from "@/lib/demoMode";
-import { DEMO_USER, resetDemoData } from "@/lib/demoStore";
+import { resetDemoData } from "@/lib/demoStore";
+import { DEMO_USER } from "@/lib/demoUser";
 import { supabase } from "@/lib/supabase";
 
 function throwAuthError(error: unknown): never {

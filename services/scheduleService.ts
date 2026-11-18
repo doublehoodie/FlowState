@@ -1,14 +1,14 @@
+import { endOfDay, startOfDay, toDateKey } from "@/lib/dates";
 import { isDemoMode } from "@/lib/demoMode";
-import { newId, readData, todayRange, withTask, writeData } from "@/lib/demoStore";
+import { dayRangeFromKey, newId, readData, todayRange, withTask, writeData } from "@/lib/demoStore";
 import { generateDailySchedule } from "@/lib/schedulingEngine";
 import { supabase } from "@/lib/supabase";
 import { listPerformanceMetrics } from "@/services/metricsService";
 import { listTasks } from "@/services/taskService";
 import type { ScheduleBlock, Task } from "@/types/domain";
 
-export async function listTodaySchedule(userId: string): Promise<ScheduleBlock[]> {
+export async function listScheduleInRange(userId: string, start: Date, end: Date): Promise<ScheduleBlock[]> {
   if (isDemoMode) {
-    const { start, end } = todayRange();
     const data = readData();
     return data.schedule_blocks
       .filter((block) => {
@@ -18,11 +18,6 @@ export async function listTodaySchedule(userId: string): Promise<ScheduleBlock[]
       .map((block) => withTask(block, data.tasks))
       .sort((a, b) => a.start_time.localeCompare(b.start_time));
   }
-
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
 
   const { data, error } = await supabase
     .from("schedule_blocks")
@@ -36,8 +31,26 @@ export async function listTodaySchedule(userId: string): Promise<ScheduleBlock[]
   return (data ?? []) as ScheduleBlock[];
 }
 
-export async function listTodayUnscheduledTasks(userId: string): Promise<Task[]> {
-  const [tasks, scheduleBlocks] = await Promise.all([listTasks(userId), listTodaySchedule(userId)]);
+export async function listTodaySchedule(userId: string, dateKey?: string): Promise<ScheduleBlock[]> {
+  if (dateKey) {
+    const { start, end } = dayRangeFromKey(dateKey);
+    return listScheduleInRange(userId, start, end);
+  }
+  const { start, end } = todayRange();
+  return listScheduleInRange(userId, start, end);
+}
+
+export async function listWeekSchedule(userId: string, weekStart: Date): Promise<ScheduleBlock[]> {
+  const start = startOfDay(weekStart);
+  const sunday = new Date(start);
+  sunday.setDate(sunday.getDate() + 6);
+  const end = endOfDay(sunday);
+  return listScheduleInRange(userId, start, end);
+}
+
+export async function listTodayUnscheduledTasks(userId: string, dateKey?: string): Promise<Task[]> {
+  const key = dateKey ?? toDateKey(new Date());
+  const [tasks, scheduleBlocks] = await Promise.all([listTasks(userId), listTodaySchedule(userId, key)]);
   const scheduledTaskIds = new Set(scheduleBlocks.map((block) => block.task_id));
 
   return tasks.filter((task) => !scheduledTaskIds.has(task.id));

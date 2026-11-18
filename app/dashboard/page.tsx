@@ -1,14 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { AuthGuard } from "@/components/AuthGuard";
+import { CheckInCard } from "@/components/CheckInCard";
+import { DailyGoalsCard } from "@/components/DailyGoalsCard";
+import { NudgeRunner, requestNotificationPermission } from "@/components/NudgeRunner";
+import { ReminderSettingsCard } from "@/components/ReminderSettingsCard";
+import { formatDayLabel, parseDateKey, toDateKey } from "@/lib/dates";
 import { formatTimeRange, getTimeOfDayBucket } from "@/lib/timeBuckets";
 import { getCurrentUser } from "@/services/authService";
+import { listCheckInsForDate, submitCheckIn } from "@/services/checkInService";
+import { carryOpenGoalsForward, createGoal, listGoalsForDate, updateGoalStatus } from "@/services/goalService";
+import { getReminderPreferences, saveReminderPreferences } from "@/services/reminderService";
 import { generateAndSaveDailySchedule, listTodaySchedule, listTodayUnscheduledTasks } from "@/services/scheduleService";
-import type { ScheduleBlock, Task } from "@/types/domain";
+import type { DailyCheckIn, DailyGoal, GoalCategory, ReminderPreferences, ScheduleBlock, Task } from "@/types/domain";
 
 const timelineHours = Array.from({ length: 12 }, (_, index) => index + 9);
 const timelineStartHour = 9;
@@ -26,11 +34,10 @@ function blockPosition(block: ScheduleBlock) {
 }
 
 function placementBadge(block: ScheduleBlock) {
-  const mode = block.placement_mode ?? "auto";
-  return mode === "manual" ? "Manual" : "Auto";
+  return (block.placement_mode ?? "auto") === "manual" ? "Manual" : "Auto";
 }
 
-function DayTimeline({ blocks }: { blocks: ScheduleBlock[] }) {
+function DayTimeline({ blocks, dateKey }: { blocks: ScheduleBlock[]; dateKey: string }) {
   const router = useRouter();
 
   function handleTimelineClick(event: React.MouseEvent<HTMLDivElement>) {
@@ -43,14 +50,12 @@ function DayTimeline({ blocks }: { blocks: ScheduleBlock[] }) {
     const clamped = Math.max(0, Math.min(y / rect.height, 1));
     const rawOffset = clamped * timelineMinutes;
     const snappedOffset = Math.min(Math.round(rawOffset / 30) * 30, timelineMinutes - 15);
-
-    const anchor = new Date();
+    const anchor = parseDateKey(dateKey);
     anchor.setHours(timelineStartHour, 0, 0, 0);
     anchor.setMinutes(anchor.getMinutes() + snappedOffset);
-
     const hh = String(anchor.getHours()).padStart(2, "0");
     const mm = String(anchor.getMinutes()).padStart(2, "0");
-    router.push(`/tasks?source=today&time=${hh}:${mm}`);
+    router.push(`/tasks?source=today&time=${hh}:${mm}&date=${dateKey}`);
   }
 
   return (
@@ -59,7 +64,7 @@ function DayTimeline({ blocks }: { blocks: ScheduleBlock[] }) {
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.18em] text-moss">Day view</p>
           <h2 className="mt-1 text-2xl font-black tracking-[-0.04em]">Scheduled blocks</h2>
-          <p className="mt-2 text-sm text-moss">Tap anywhere on the calendar to add a task.</p>
+          <p className="mt-2 text-sm text-moss">Tap empty calendar space to add a task for this day.</p>
         </div>
         <span className="w-fit rounded-full bg-cream px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-moss">9 AM - 9 PM</span>
       </div>
@@ -103,41 +108,58 @@ function DayTimeline({ blocks }: { blocks: ScheduleBlock[] }) {
 }
 
 function DashboardContent() {
+  const searchParams = useSearchParams();
+  const dateKey = searchParams.get("date") ?? toDateKey(new Date());
+  const viewingToday = dateKey === toDateKey(new Date());
+
   const [userId, setUserId] = useState<string | null>(null);
   const [blocks, setBlocks] = useState<ScheduleBlock[]>([]);
   const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
+  const [goals, setGoals] = useState<DailyGoal[]>([]);
+  const [checkIns, setCheckIns] = useState<DailyCheckIn[]>([]);
+  const [prefs, setPrefs] = useState<ReminderPreferences | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
-  async function refreshToday(currentUserId: string) {
-    const [schedule, pending] = await Promise.all([listTodaySchedule(currentUserId), listTodayUnscheduledTasks(currentUserId)]);
+  async function refresh(currentUserId: string, key: string) {
+    const [schedule, pending, dayGoals, dayCheckIns, reminderPrefs] = await Promise.all([
+      listTodaySchedule(currentUserId, key),
+      listTodayUnscheduledTasks(currentUserId, key),
+      listGoalsForDate(currentUserId, key),
+      listCheckInsForDate(currentUserId, key),
+      getReminderPreferences(currentUserId)
+    ]);
     setBlocks(schedule);
     setPendingTasks(pending);
+    setGoals(dayGoals);
+    setCheckIns(dayCheckIns);
+    setPrefs(reminderPrefs);
   }
 
   useEffect(() => {
+    setLoading(true);
     getCurrentUser()
       .then(async (user) => {
         if (!user) return;
         setUserId(user.id);
-        await refreshToday(user.id);
+        await refresh(user.id, dateKey);
       })
       .catch((caught) => setError(caught instanceof Error ? caught.message : "Could not load schedule."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [dateKey]);
 
   async function handleGenerate() {
     if (!userId) return;
     setGenerating(true);
     setError(null);
     setNotice(null);
-
     try {
       await generateAndSaveDailySchedule(userId);
-      await refreshToday(userId);
-      setNotice("Today was regenerated from your current tasks and learned performance metrics.");
+      await refresh(userId, dateKey);
+      setNotice("Day regenerated from tasks and learned performance metrics.");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not generate schedule.");
     } finally {
@@ -150,18 +172,24 @@ function DashboardContent() {
     return Math.round((blocks.filter((block) => block.completed).length / blocks.length) * 100);
   }, [blocks]);
 
+  const dayLabel = formatDayLabel(parseDateKey(dateKey));
+
   return (
-    <AppShell eyebrow="Daily rhythm" title="Today">
+    <AppShell eyebrow="Daily rhythm" title={viewingToday ? "Today" : dayLabel}>
+      <NudgeRunner prefs={viewingToday ? prefs : null} />
       <div className="space-y-5">
         <section className="card space-y-4 overflow-hidden relative">
           <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-ember/15" />
           <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-moss">Progress</p>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-moss">Progress · {dateKey}</p>
               <p className="mt-2 text-4xl font-black tracking-[-0.05em]">{completion}%</p>
             </div>
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-              <Link className="primary-button w-full text-center sm:w-auto" href="/tasks?source=today">
+              <Link className="secondary-button w-full text-center sm:w-auto" href="/calendar">
+                Week calendar
+              </Link>
+              <Link className="primary-button w-full text-center sm:w-auto" href={`/tasks?source=today&date=${dateKey}`}>
                 + Add Task
               </Link>
               <button className="secondary-button w-full sm:w-auto" disabled={generating} onClick={handleGenerate} type="button">
@@ -170,8 +198,7 @@ function DashboardContent() {
             </div>
           </div>
           <p className="relative text-sm leading-6 text-ink/70">
-            Today is for execution. Plan and add tasks on the Tasks page—auto-scheduling places deep work in the morning, shallow in
-            the afternoon, and admin in the evening when you use Auto-schedule there.
+            Research loop: morning SMART goals → daytime nudges → schedule deep work when your metrics say you’re strongest → check in on flow.
           </p>
         </section>
 
@@ -179,7 +206,72 @@ function DashboardContent() {
         {notice ? <p className="rounded-2xl bg-moss/10 px-4 py-3 text-sm text-moss">{notice}</p> : null}
         {loading ? <div className="card text-center text-moss">Loading today...</div> : null}
 
-        {!loading ? <DayTimeline blocks={blocks} /> : null}
+        {!loading && userId ? (
+          <DailyGoalsCard
+            goals={goals}
+            saving={saving}
+            onCarryForward={async () => {
+              setSaving(true);
+              try {
+                const carried = await carryOpenGoalsForward(userId, dateKey);
+                setGoals(await listGoalsForDate(userId, dateKey));
+                setNotice(carried.length ? `Carried ${carried.length} open goal(s) forward.` : "Nothing to carry (today already has goals, or yesterday was clear).");
+              } catch (caught) {
+                setError(caught instanceof Error ? caught.message : "Could not carry goals.");
+              } finally {
+                setSaving(false);
+              }
+            }}
+            onCreate={async (title, category: GoalCategory) => {
+              setSaving(true);
+              try {
+                await createGoal(userId, dateKey, { title, category });
+                setGoals(await listGoalsForDate(userId, dateKey));
+              } finally {
+                setSaving(false);
+              }
+            }}
+            onToggleDone={async (goal) => {
+              await updateGoalStatus(goal.id, goal.status === "done" ? "open" : "done");
+              setGoals(await listGoalsForDate(userId, dateKey));
+            }}
+          />
+        ) : null}
+
+        {!loading && userId && prefs ? (
+          <ReminderSettingsCard
+            prefs={prefs}
+            saving={saving}
+            onEnableNotifications={requestNotificationPermission}
+            onSave={async (patch) => {
+              setSaving(true);
+              try {
+                const next = await saveReminderPreferences(userId, patch);
+                setPrefs(next);
+              } finally {
+                setSaving(false);
+              }
+            }}
+          />
+        ) : null}
+
+        {!loading && userId ? (
+          <CheckInCard
+            checkIns={checkIns}
+            saving={saving}
+            onSubmit={async (input) => {
+              setSaving(true);
+              try {
+                await submitCheckIn(userId, dateKey, input);
+                setCheckIns(await listCheckInsForDate(userId, dateKey));
+              } finally {
+                setSaving(false);
+              }
+            }}
+          />
+        ) : null}
+
+        {!loading ? <DayTimeline blocks={blocks} dateKey={dateKey} /> : null}
 
         {!loading ? (
           <section className="space-y-3">
@@ -219,7 +311,6 @@ function DashboardContent() {
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.18em] text-ember">Pending</p>
               <h2 className="mt-1 text-2xl font-black tracking-[-0.04em]">Unscheduled tasks</h2>
-              <p className="mt-2 text-sm leading-6 text-moss">These tasks are saved but do not have a time block for today yet.</p>
             </div>
             {pendingTasks.map((task) => (
               <div className="rounded-2xl border border-oat bg-cream/60 p-4" key={task.id}>
@@ -238,7 +329,9 @@ function DashboardContent() {
 export default function DashboardPage() {
   return (
     <AuthGuard>
-      <DashboardContent />
+      <Suspense fallback={<div className="card py-10 text-center text-moss">Loading today…</div>}>
+        <DashboardContent />
+      </Suspense>
     </AuthGuard>
   );
 }

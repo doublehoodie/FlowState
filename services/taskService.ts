@@ -1,5 +1,6 @@
+import { combineDateAndTime, toDateKey } from "@/lib/dates";
 import { isDemoMode } from "@/lib/demoMode";
-import { newId, readData, todayRange, withTask, writeData } from "@/lib/demoStore";
+import { dayRangeFromKey, newId, readData, todayRange, withTask, writeData } from "@/lib/demoStore";
 import { findNextAvailableSlot, hasScheduleOverlap } from "@/lib/schedulingEngine";
 import { supabase } from "@/lib/supabase";
 import { getTodayAtTime } from "@/lib/timeBuckets";
@@ -55,30 +56,25 @@ export async function createTask(userId: string, input: NewTaskInput): Promise<T
   return data;
 }
 
-async function listTodayBlocksForScheduling(userId: string): Promise<ScheduleBlock[]> {
+async function listTodayBlocksForScheduling(userId: string, dateKey?: string): Promise<ScheduleBlock[]> {
+  const range = dateKey ? dayRangeFromKey(dateKey) : todayRange();
   if (isDemoMode) {
-    const { start, end } = todayRange();
     const data = readData();
     return data.schedule_blocks
       .filter((block) => {
         const t = new Date(block.start_time).getTime();
-        return block.user_id === userId && t >= start.getTime() && t < end.getTime();
+        return block.user_id === userId && t >= range.start.getTime() && t < range.end.getTime();
       })
       .map((block) => withTask(block, data.tasks))
       .sort((a, b) => a.start_time.localeCompare(b.start_time));
   }
 
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
-
   const { data, error } = await supabase
     .from("schedule_blocks")
     .select("*, task:tasks(*)")
     .eq("user_id", userId)
-    .gte("start_time", start.toISOString())
-    .lt("start_time", end.toISOString())
+    .gte("start_time", range.start.toISOString())
+    .lt("start_time", range.end.toISOString())
     .order("start_time", { ascending: true });
 
   if (error) throw error;
@@ -128,9 +124,10 @@ async function createScheduleBlockForTask(
 
 export async function createTaskWithScheduling(
   userId: string,
-  input: CreateTaskWithSchedulingInput
+  input: CreateTaskWithSchedulingInput & { schedule_date?: string }
 ): Promise<TaskCreationResult> {
   const schedulingMode = input.scheduling_mode ?? "auto";
+  const scheduleDate = input.schedule_date ?? toDateKey(new Date());
   const task = await createTask(userId, {
     title: input.title,
     type: input.type,
@@ -141,7 +138,7 @@ export async function createTaskWithScheduling(
     return { task, scheduling_mode: schedulingMode, unscheduled_reason: "Task was saved without a scheduled time." };
   }
 
-  const existingBlocks = await listTodayBlocksForScheduling(userId);
+  const existingBlocks = await listTodayBlocksForScheduling(userId, scheduleDate);
 
   if (schedulingMode === "manual") {
     if (!input.manual_schedule?.start_time) {
@@ -181,13 +178,26 @@ export async function createTaskWithScheduling(
 
 export async function createTaskFromForm(
   userId: string,
-  input: NewTaskInput & { scheduling_mode?: "auto" | "manual" | "unscheduled"; manual_start_time?: string }
+  input: NewTaskInput & {
+    scheduling_mode?: "auto" | "manual" | "unscheduled";
+    manual_start_time?: string;
+    schedule_date?: string;
+  }
 ): Promise<TaskCreationResult> {
+  const scheduleDate = input.schedule_date ?? toDateKey(new Date());
+  const startIso = input.manual_start_time
+    ? (scheduleDate === toDateKey(new Date())
+        ? getTodayAtTime(input.manual_start_time)
+        : combineDateAndTime(scheduleDate, input.manual_start_time)
+      ).toISOString()
+    : undefined;
+
   return createTaskWithScheduling(userId, {
     ...input,
-    manual_schedule: input.manual_start_time
+    schedule_date: scheduleDate,
+    manual_schedule: startIso
       ? {
-          start_time: getTodayAtTime(input.manual_start_time).toISOString(),
+          start_time: startIso,
           duration_minutes: input.estimated_duration
         }
       : undefined

@@ -42,6 +42,13 @@ NEXT_PUBLIC_DEMO_MODE=true
 
 In demo mode the app uses browser `localStorage`, seeds sample tasks, skips login, and shows **Reset demo** instead of log out. Leave this unset/false for the real Supabase auth app.
 
+## Live URLs
+
+| Version | URL |
+|--------|-----|
+| Auth (Supabase login) | https://flowstatehq.vercel.app |
+| Demo (no email) | https://flowstate-demo-app.vercel.app |
+
 ## Folder Structure
 
 ```text

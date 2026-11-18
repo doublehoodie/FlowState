@@ -1,3 +1,5 @@
+import { isDemoMode } from "@/lib/demoMode";
+import { newId, readData, todayRange, withTask, writeData } from "@/lib/demoStore";
 import { findNextAvailableSlot, hasScheduleOverlap } from "@/lib/schedulingEngine";
 import { supabase } from "@/lib/supabase";
 import { getTodayAtTime } from "@/lib/timeBuckets";
@@ -11,6 +13,12 @@ import type {
 } from "@/types/domain";
 
 export async function listTasks(userId: string): Promise<Task[]> {
+  if (isDemoMode) {
+    return readData()
+      .tasks.filter((task) => task.user_id === userId)
+      .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  }
+
   const { data, error } = await supabase
     .from("tasks")
     .select("*")
@@ -22,6 +30,21 @@ export async function listTasks(userId: string): Promise<Task[]> {
 }
 
 export async function createTask(userId: string, input: NewTaskInput): Promise<Task> {
+  if (isDemoMode) {
+    const data = readData();
+    const task: Task = {
+      id: newId(),
+      user_id: userId,
+      title: input.title,
+      type: input.type,
+      estimated_duration: input.estimated_duration,
+      created_at: new Date().toISOString()
+    };
+    data.tasks.unshift(task);
+    writeData(data);
+    return task;
+  }
+
   const { data, error } = await supabase
     .from("tasks")
     .insert({ ...input, user_id: userId })
@@ -33,6 +56,18 @@ export async function createTask(userId: string, input: NewTaskInput): Promise<T
 }
 
 async function listTodayBlocksForScheduling(userId: string): Promise<ScheduleBlock[]> {
+  if (isDemoMode) {
+    const { start, end } = todayRange();
+    const data = readData();
+    return data.schedule_blocks
+      .filter((block) => {
+        const t = new Date(block.start_time).getTime();
+        return block.user_id === userId && t >= start.getTime() && t < end.getTime();
+      })
+      .map((block) => withTask(block, data.tasks))
+      .sort((a, b) => a.start_time.localeCompare(b.start_time));
+  }
+
   const start = new Date();
   start.setHours(0, 0, 0, 0);
   const end = new Date(start);
@@ -57,6 +92,23 @@ async function createScheduleBlockForTask(
   end: Date,
   placementMode: BlockPlacementMode
 ): Promise<ScheduleBlock> {
+  if (isDemoMode) {
+    const data = readData();
+    const block = {
+      id: newId(),
+      user_id: userId,
+      task_id: task.id,
+      start_time: start.toISOString(),
+      end_time: end.toISOString(),
+      completed: false,
+      created_at: new Date().toISOString(),
+      placement_mode: placementMode
+    };
+    data.schedule_blocks.push(block);
+    writeData(data);
+    return withTask(block, data.tasks);
+  }
+
   const { data, error } = await supabase
     .from("schedule_blocks")
     .insert({
@@ -143,6 +195,15 @@ export async function createTaskFromForm(
 }
 
 export async function updateTask(taskId: string, input: NewTaskInput): Promise<Task> {
+  if (isDemoMode) {
+    const data = readData();
+    const index = data.tasks.findIndex((task) => task.id === taskId);
+    if (index < 0) throw new Error("Task not found.");
+    data.tasks[index] = { ...data.tasks[index], ...input };
+    writeData(data);
+    return data.tasks[index];
+  }
+
   const { data, error } = await supabase
     .from("tasks")
     .update(input)
@@ -155,6 +216,14 @@ export async function updateTask(taskId: string, input: NewTaskInput): Promise<T
 }
 
 export async function deleteTask(taskId: string): Promise<void> {
+  if (isDemoMode) {
+    const data = readData();
+    data.tasks = data.tasks.filter((task) => task.id !== taskId);
+    data.schedule_blocks = data.schedule_blocks.filter((block) => block.task_id !== taskId);
+    writeData(data);
+    return;
+  }
+
   const { error } = await supabase.from("tasks").delete().eq("id", taskId);
   if (error) throw error;
 }

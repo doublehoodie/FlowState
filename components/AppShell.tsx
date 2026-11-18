@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { isDemoMode } from "@/lib/demoMode";
 import { signOut } from "@/services/authService";
 
 const links = [
@@ -16,7 +17,7 @@ export function AppShell({ children, title, eyebrow }: { children: React.ReactNo
 
   async function handleSignOut() {
     await signOut();
-    router.replace("/login");
+    router.replace(isDemoMode ? "/" : "/login");
   }
 
   return (
@@ -25,9 +26,12 @@ export function AppShell({ children, title, eyebrow }: { children: React.ReactNo
         <div className="space-y-2">
           {eyebrow ? <p className="text-xs font-bold uppercase tracking-[0.22em] text-ember">{eyebrow}</p> : null}
           <h1 className="text-4xl font-black tracking-[-0.045em] text-ink">{title}</h1>
+          {isDemoMode ? (
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-moss">Demo · no account required</p>
+          ) : null}
         </div>
         <button className="secondary-button px-4 py-2 text-xs" onClick={handleSignOut} type="button">
-          Log out
+          {isDemoMode ? "Reset demo" : "Log out"}
         </button>
       </header>
       <section className="flex-1">{children}</section>

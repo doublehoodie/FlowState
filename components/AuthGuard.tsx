@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { isDemoMode } from "@/lib/demoMode";
 import { supabase } from "@/lib/supabase";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -10,6 +11,13 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+
+    if (isDemoMode) {
+      setReady(true);
+      return () => {
+        mounted = false;
+      };
+    }
 
     supabase.auth.getUser().then(({ data }) => {
       if (!mounted) return;

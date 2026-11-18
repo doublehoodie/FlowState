@@ -32,6 +32,16 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 npm run dev
 ```
 
+## Demo mode (no email)
+
+For a shareable demo without accounts or Supabase, set:
+
+```bash
+NEXT_PUBLIC_DEMO_MODE=true
+```
+
+In demo mode the app uses browser `localStorage`, seeds sample tasks, skips login, and shows **Reset demo** instead of log out. Leave this unset/false for the real Supabase auth app.
+
 ## Folder Structure
 
 ```text

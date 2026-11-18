@@ -1,7 +1,8 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { isDemoMode } from "@/lib/demoMode";
 import { signInWithEmail, signUpWithEmail } from "@/services/authService";
 
 export default function LoginPage() {
@@ -11,6 +12,14 @@ export default function LoginPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isDemoMode) router.replace("/dashboard");
+  }, [router]);
+
+  if (isDemoMode) {
+    return <main className="mx-auto flex min-h-screen items-center justify-center px-5 text-moss">Opening demo…</main>;
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

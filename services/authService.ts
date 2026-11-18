@@ -1,3 +1,5 @@
+import { isDemoMode } from "@/lib/demoMode";
+import { DEMO_USER, resetDemoData } from "@/lib/demoStore";
 import { supabase } from "@/lib/supabase";
 
 function throwAuthError(error: unknown): never {
@@ -15,24 +17,35 @@ function throwAuthError(error: unknown): never {
 }
 
 export async function getCurrentUser() {
+  if (isDemoMode) return DEMO_USER;
+
   const { data, error } = await supabase.auth.getUser();
   if (error) throw error;
   return data.user;
 }
 
 export async function signInWithEmail(email: string, password: string) {
+  if (isDemoMode) return DEMO_USER;
+
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
   return data.user;
 }
 
 export async function signUpWithEmail(email: string, password: string) {
+  if (isDemoMode) return DEMO_USER;
+
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) throwAuthError(error);
   return data.user;
 }
 
 export async function signOut() {
+  if (isDemoMode) {
+    resetDemoData();
+    return;
+  }
+
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
 }

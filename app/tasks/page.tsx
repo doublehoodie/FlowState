@@ -107,7 +107,7 @@ function TasksContent() {
 
   return (
     <AppShell title="Tasks">
-      <div className="space-y-6">
+      <div className="space-y-10">
         <TaskForm
           initialValue={initialForm}
           key={formKey}
@@ -118,27 +118,25 @@ function TasksContent() {
           submitLabel={editingTask ? "Save changes" : "Add task"}
         />
 
-        {error ? <p className="rounded-control border border-clay/30 bg-clay/10 px-4 py-3 text-sm text-clay-deep">{error}</p> : null}
-        {notice ? <p className="rounded-control border border-success/20 bg-success/10 px-4 py-3 text-sm text-success">{notice}</p> : null}
+        {error ? <p className="text-sm text-clay">{error}</p> : null}
+        {notice ? <p className="text-sm text-success">{notice}</p> : null}
         {loading ? <p className="text-sm text-mist">Loading…</p> : null}
 
-        <section className="space-y-2">
+        <section className="divide-y divide-linen border-y border-linen">
           {tasks.map((task) => (
-            <article className="rounded-panel border border-stone bg-white/70 px-4 py-3" key={task.id}>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs text-mist">{task.type}</p>
-                  <h3 className="mt-1 text-base font-semibold text-bark">{task.title}</h3>
-                  <p className="mt-1 text-sm text-mist">{task.estimated_duration} minutes</p>
-                </div>
-                <div className="flex gap-3">
-                  <button className="text-button" onClick={() => setEditingTask(task)} type="button">
-                    Edit
-                  </button>
-                  <button className="text-button text-clay" onClick={() => handleDelete(task.id)} type="button">
-                    Delete
-                  </button>
-                </div>
+            <article className="flex items-start justify-between gap-3 py-4" key={task.id}>
+              <div>
+                <p className="text-xs text-mist">{task.type}</p>
+                <h3 className="mt-1 text-base font-medium text-charcoal">{task.title}</h3>
+                <p className="mt-1 text-sm text-mist">{task.estimated_duration} minutes</p>
+              </div>
+              <div className="flex gap-3">
+                <button className="text-button" onClick={() => setEditingTask(task)} type="button">
+                  Edit
+                </button>
+                <button className="text-button" onClick={() => handleDelete(task.id)} type="button">
+                  Delete
+                </button>
               </div>
             </article>
           ))}

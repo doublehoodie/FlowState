@@ -42,10 +42,9 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-5 py-8">
-      <section className="mb-8 space-y-3">
-        <p className="font-brand text-2xl text-clay">FlowState</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-bark">Welcome back</h1>
-        <p className="text-sm text-mist">Email and password. Simple on purpose.</p>
+      <section className="mb-10 space-y-2">
+        <p className="text-sm text-mist">FlowState</p>
+        <h1 className="text-2xl font-medium tracking-tight text-charcoal">Welcome back</h1>
       </section>
 
       <form className="space-y-4" onSubmit={handleSubmit}>
@@ -64,11 +63,11 @@ export default function LoginPage() {
             value={password}
           />
         </label>
-        {error ? <p className="rounded-control border border-clay/30 bg-clay/10 px-4 py-3 text-sm text-clay-deep">{error}</p> : null}
-        <button className="primary-button w-full" disabled={loading} type="submit">
+        {error ? <p className="text-sm text-clay">{error}</p> : null}
+        <button className="primary-button" disabled={loading} type="submit">
           {loading ? "Working…" : mode === "signin" ? "Log in" : "Create account"}
         </button>
-        <button className="text-button w-full text-center" onClick={() => setMode(mode === "signin" ? "signup" : "signin")} type="button">
+        <button className="text-button" onClick={() => setMode(mode === "signin" ? "signup" : "signin")} type="button">
           {mode === "signin" ? "Need an account? Sign up" : "Already have an account? Log in"}
         </button>
       </form>

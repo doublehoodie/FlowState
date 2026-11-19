@@ -5,32 +5,34 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        paper: "#F4EEE6",
-        stone: "#E8DFD4",
-        clay: "#C96A3D",
-        "clay-deep": "#A8522C",
-        walnut: "#5C4033",
-        bark: "#3D2E26",
-        mist: "#9A8B7A",
+        // Quiet Studio
+        paper: "#FAF7F2",
+        linen: "#EFE9E0",
+        clay: "#B85C38",
+        "clay-deep": "#9A4A2C",
+        charcoal: "#3D342C",
+        ink: "#3D342C",
+        mist: "#8A7F74",
         success: "#5F7355",
-        // Keep legacy aliases mapped so gradual migration doesn't break
-        ink: "#5C4033",
-        moss: "#9A8B7A",
+        // Legacy aliases used across components
+        moss: "#8A7F74",
         sage: "#5F7355",
-        cream: "#F4EEE6",
-        oat: "#E8DFD4",
-        ember: "#C96A3D"
+        cream: "#FAF7F2",
+        oat: "#EFE9E0",
+        ember: "#B85C38",
+        walnut: "#3D342C",
+        bark: "#3D342C",
+        stone: "#EFE9E0"
       },
       borderRadius: {
-        panel: "14px",
-        control: "12px"
+        panel: "8px",
+        control: "6px"
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
-        brand: ["var(--font-brand)", "Georgia", "serif"]
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"]
       },
       boxShadow: {
-        soft: "0 1px 2px rgba(61, 46, 38, 0.06), 0 8px 24px rgba(61, 46, 38, 0.06)"
+        soft: "none"
       }
     }
   },

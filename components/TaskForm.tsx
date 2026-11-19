@@ -65,8 +65,8 @@ export function TaskForm({
   }
 
   return (
-    <form className="space-y-5 rounded-panel border border-stone bg-white/70 p-5" onSubmit={handleSubmit}>
-      <div className="flex items-center justify-between gap-4">
+    <form className="space-y-5" onSubmit={handleSubmit}>
+      <div className="flex items-baseline justify-between gap-4">
         <h2 className="section-title">New task</h2>
         {onCancel ? (
           <button className="text-button" onClick={onCancel} type="button">
@@ -86,18 +86,15 @@ export function TaskForm({
         />
       </label>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="flex flex-wrap gap-2">
         {taskTypes.map((type) => (
           <button
-            className={`rounded-control border p-3 text-left transition ${
-              form.type === type.value ? "border-clay bg-clay/10 text-bark" : "border-stone bg-paper text-walnut"
-            }`}
+            className={`chip ${form.type === type.value ? "chip-active" : ""}`}
             key={type.value}
             onClick={() => setForm((current) => ({ ...current, type: type.value }))}
             type="button"
           >
-            <span className="block text-sm font-semibold">{type.label}</span>
-            <span className="mt-1 block text-xs text-mist">{type.best}</span>
+            {type.label} · {type.best}
           </button>
         ))}
       </div>
@@ -116,7 +113,7 @@ export function TaskForm({
       </label>
 
       {showScheduling ? (
-        <section className="space-y-3 border-t border-stone pt-4">
+        <section className="space-y-3 border-t border-linen pt-4">
           <p className="label">Scheduling</p>
           <div className="flex flex-wrap gap-2">
             {(
@@ -138,9 +135,7 @@ export function TaskForm({
           </div>
 
           {form.scheduling_mode === "auto" ? (
-            <p className="text-sm text-mist">
-              Auto places {form.type} work in the {bucket.label.toLowerCase()} first, then nearby buckets if needed.
-            </p>
+            <p className="text-sm text-mist">Places {form.type} work in the {bucket.label.toLowerCase()} first.</p>
           ) : null}
 
           {form.scheduling_mode === "manual" ? (

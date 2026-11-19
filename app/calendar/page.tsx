@@ -55,7 +55,7 @@ function CalendarContent() {
     <AppShell title="Week">
       <div className="space-y-6">
         <p className="text-sm text-mist">{rangeLabel}</p>
-        {error ? <p className="rounded-control border border-clay/30 bg-clay/10 px-4 py-3 text-sm text-clay-deep">{error}</p> : null}
+        {error ? <p className="text-sm text-clay">{error}</p> : null}
         {loading ? <p className="text-sm text-mist">Loading…</p> : null}
         <WeekBoard
           anchor={anchor}

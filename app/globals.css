@@ -4,12 +4,11 @@
 
 :root {
   color-scheme: light;
-  --paper: #f4eee6;
-  --stone: #e8dfd4;
-  --clay: #c96a3d;
-  --walnut: #5c4033;
-  --bark: #3d2e26;
-  --mist: #9a8b7a;
+  --paper: #faf7f2;
+  --linen: #efe9e0;
+  --clay: #b85c38;
+  --charcoal: #3d342c;
+  --mist: #8a7f74;
   --success: #5f7355;
 }
 
@@ -25,10 +24,8 @@ html {
 body {
   min-height: 100%;
   margin: 0;
-  background:
-    linear-gradient(180deg, rgba(232, 223, 212, 0.45) 0%, transparent 28%),
-    var(--paper);
-  color: var(--walnut);
+  background: var(--paper);
+  color: var(--charcoal);
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -42,27 +39,27 @@ textarea {
 
 @layer components {
   .card {
-    @apply rounded-panel border border-stone bg-white/80 p-5 shadow-soft;
+    @apply border-0 bg-transparent p-0 shadow-none;
   }
 
   .field {
-    @apply w-full rounded-control border border-stone bg-paper px-4 py-3 text-base text-walnut outline-none transition placeholder:text-mist focus:border-clay focus:ring-2 focus:ring-clay/20;
+    @apply w-full rounded-control border border-linen bg-paper px-3 py-2.5 text-base text-charcoal outline-none transition placeholder:text-mist focus:border-clay focus:ring-0;
   }
 
   .primary-button {
-    @apply inline-flex items-center justify-center rounded-control bg-clay px-5 py-3 text-sm font-semibold text-white transition hover:bg-clay-deep disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-control bg-clay px-4 py-2.5 text-sm font-medium text-white transition hover:bg-clay-deep disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .secondary-button {
-    @apply inline-flex items-center justify-center rounded-control border border-stone bg-transparent px-5 py-3 text-sm font-semibold text-walnut transition hover:bg-stone/60 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-control border border-linen bg-transparent px-4 py-2.5 text-sm font-medium text-charcoal transition hover:bg-linen/70 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .text-button {
-    @apply text-sm font-medium text-mist underline-offset-4 transition hover:text-walnut hover:underline disabled:opacity-50;
+    @apply text-sm font-medium text-mist underline-offset-2 transition hover:text-charcoal hover:underline disabled:opacity-50;
   }
 
   .section-title {
-    @apply text-xl font-semibold tracking-tight text-bark;
+    @apply text-lg font-medium tracking-tight text-charcoal;
   }
 
   .section-copy {
@@ -70,14 +67,18 @@ textarea {
   }
 
   .label {
-    @apply text-sm font-medium text-walnut;
+    @apply text-sm font-medium text-charcoal;
   }
 
   .chip {
-    @apply inline-flex items-center rounded-control border border-stone bg-paper px-2.5 py-1 text-xs font-medium text-mist;
+    @apply inline-flex items-center rounded-control border border-linen px-2 py-0.5 text-xs font-medium text-mist;
   }
 
   .chip-active {
-    @apply border-clay/30 bg-clay/10 text-clay-deep;
+    @apply border-clay/40 text-clay;
+  }
+
+  .divider {
+    @apply border-t border-linen;
   }
 }

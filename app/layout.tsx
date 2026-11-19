@@ -1,16 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, Fraunces } from "next/font/google";
+import { Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 
-const sans = DM_Sans({
+const sans = Source_Sans_3({
   subsets: ["latin"],
   variable: "--font-sans",
-  display: "swap"
-});
-
-const brand = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-brand",
   display: "swap"
 });
 
@@ -22,12 +16,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#F4EEE6"
+  themeColor: "#FAF7F2"
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html className={`${sans.variable} ${brand.variable}`} lang="en">
+    <html className={sans.variable} lang="en">
       <body className="font-sans">{children}</body>
     </html>
   );

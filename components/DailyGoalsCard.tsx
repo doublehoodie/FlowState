@@ -3,12 +3,17 @@
 import { FormEvent, useState } from "react";
 import type { DailyGoal, GoalCategory } from "@/types/domain";
 
+/** Stored values match Weintraub et al. 2021; labels are everyday wording. */
 const categories: Array<{ value: GoalCategory; label: string }> = [
-  { value: "mastery", label: "Mastery" },
-  { value: "resource", label: "Resource" },
-  { value: "understanding", label: "Understanding" },
+  { value: "mastery", label: "Learn" },
+  { value: "resource", label: "Get support" },
+  { value: "understanding", label: "Figure out" },
   { value: "other", label: "Other" }
 ];
+
+function categoryLabel(value: GoalCategory) {
+  return categories.find((item) => item.value === value)?.label ?? value;
+}
 
 export function DailyGoalsCard({
   goals,
@@ -25,7 +30,6 @@ export function DailyGoalsCard({
 }) {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<GoalCategory>("mastery");
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent) {
@@ -40,24 +44,24 @@ export function DailyGoalsCard({
   }
 
   return (
-    <section className="space-y-4">
-      <div className="flex items-start justify-between gap-3">
+    <section className="space-y-5">
+      <div className="flex items-baseline justify-between gap-3">
         <div>
-          <h2 className="section-title">Today’s goals</h2>
-          <p className="section-copy mt-1">Up to three SMART goals. Keep them specific and doable today.</p>
+          <h2 className="section-title">Goals</h2>
+          <p className="section-copy mt-1">Three SMART goals for today.</p>
         </div>
-        <button className="text-button shrink-0" disabled={saving || goals.length > 0} onClick={() => onCarryForward()} type="button">
-          Carry yesterday
+        <button className="text-button" disabled={saving || goals.length > 0} onClick={() => onCarryForward()} type="button">
+          Carry over
         </button>
       </div>
 
-      <div className="space-y-2">
+      <ul className="divide-y divide-linen border-y border-linen">
         {goals.map((goal, index) => (
-          <div className="flex items-start gap-3 rounded-panel border border-stone bg-white/70 px-3 py-3" key={goal.id}>
+          <li className="flex items-start gap-3 py-3" key={goal.id}>
             <button
               aria-label={goal.status === "done" ? "Mark open" : "Mark done"}
-              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
-                goal.status === "done" ? "border-success bg-success text-white" : "border-stone bg-paper"
+              className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center border ${
+                goal.status === "done" ? "border-success bg-success text-[10px] text-white" : "border-linen bg-paper"
               }`}
               onClick={() => onToggleDone(goal)}
               type="button"
@@ -65,44 +69,38 @@ export function DailyGoalsCard({
               {goal.status === "done" ? "✓" : ""}
             </button>
             <div className="min-w-0 flex-1">
-              <p className={`text-sm font-medium ${goal.status === "done" ? "text-mist line-through" : "text-bark"}`}>
+              <p className={`text-sm ${goal.status === "done" ? "text-mist line-through" : "text-charcoal"}`}>
                 {index + 1}. {goal.title}
               </p>
-              <p className="mt-1 text-xs text-mist">
-                {goal.category}
+              <p className="mt-0.5 text-xs text-mist">
+                {categoryLabel(goal.category)}
                 {goal.status === "carried" ? " · carried" : ""}
               </p>
             </div>
-          </div>
+          </li>
         ))}
-        {goals.length === 0 ? <p className="text-sm text-mist">No goals yet. Add your first one below.</p> : null}
-      </div>
+        {goals.length === 0 ? <li className="py-3 text-sm text-mist">No goals yet.</li> : null}
+      </ul>
 
       {goals.length < 3 ? (
-        <form className="space-y-3 rounded-panel border border-stone bg-white/70 p-4" onSubmit={handleSubmit}>
+        <form className="space-y-3" onSubmit={handleSubmit}>
           <label className="block space-y-2">
-            <span className="label">Goal {goals.length + 1}</span>
+            <span className="label">Add goal {goals.length + 1}</span>
             <input className="field" onChange={(e) => setTitle(e.target.value)} placeholder="Today I will…" required value={title} />
           </label>
 
-          <button className="text-button" onClick={() => setShowAdvanced((v) => !v)} type="button">
-            {showAdvanced ? "Hide category" : "More options"}
-          </button>
-
-          {showAdvanced ? (
-            <div className="flex flex-wrap gap-2">
-              {categories.map((item) => (
-                <button
-                  className={`chip ${category === item.value ? "chip-active" : ""}`}
-                  key={item.value}
-                  onClick={() => setCategory(item.value)}
-                  type="button"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          ) : null}
+          <div className="flex flex-wrap gap-2">
+            {categories.map((item) => (
+              <button
+                className={`chip ${category === item.value ? "chip-active" : ""}`}
+                key={item.value}
+                onClick={() => setCategory(item.value)}
+                type="button"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
 
           {error ? <p className="text-sm text-clay">{error}</p> : null}
           <button className="primary-button" disabled={saving} type="submit">

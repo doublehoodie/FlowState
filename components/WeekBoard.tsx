@@ -18,23 +18,23 @@ export function WeekBoard({
   const days = weekDays(anchor);
 
   return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
+    <section className="space-y-5">
+      <div className="flex items-baseline justify-between gap-3">
         <div>
           <h2 className="section-title">This week</h2>
-          <p className="section-copy mt-1">Open a day to set goals and see the schedule.</p>
+          <p className="section-copy mt-1">Open a day for goals and schedule.</p>
         </div>
-        <div className="flex gap-2">
-          <button className="secondary-button px-3 py-2 text-sm" onClick={() => onShiftWeek(-7)} type="button">
+        <div className="flex gap-3">
+          <button className="text-button" onClick={() => onShiftWeek(-7)} type="button">
             Prev
           </button>
-          <button className="secondary-button px-3 py-2 text-sm" onClick={() => onShiftWeek(7)} type="button">
+          <button className="text-button" onClick={() => onShiftWeek(7)} type="button">
             Next
           </button>
         </div>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-7">
+      <div className="grid gap-0 divide-y divide-linen border-y border-linen sm:grid-cols-7 sm:divide-x sm:divide-y-0">
         {days.map((day) => {
           const key = toDateKey(day);
           const dayBlocks = blocks.filter((block) => isSameDay(new Date(block.start_time), day));
@@ -43,15 +43,15 @@ export function WeekBoard({
 
           return (
             <Link
-              className={`min-h-[120px] rounded-panel border p-3 transition hover:border-clay/40 ${
-                isSameDay(day, new Date()) ? "border-clay/50 bg-clay/5" : "border-stone bg-white/70"
+              className={`min-h-[110px] p-3 transition hover:bg-linen/40 ${
+                isSameDay(day, new Date()) ? "bg-linen/50" : ""
               }`}
               href={`/dashboard?date=${key}`}
               key={key}
             >
-              <p className="text-xs font-medium text-mist">{formatDayLabel(day)}</p>
-              <p className="mt-2 text-sm font-medium text-bark">
-                {dayGoals.length ? `${doneGoals}/${dayGoals.length} goals` : "—"}
+              <p className="text-xs text-mist">{formatDayLabel(day)}</p>
+              <p className="mt-2 text-sm text-charcoal">
+                {dayGoals.length ? `${doneGoals}/${dayGoals.length}` : "—"}
               </p>
               <ul className="mt-2 space-y-1">
                 {dayBlocks.slice(0, 2).map((block) => (

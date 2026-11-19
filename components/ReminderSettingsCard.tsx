@@ -37,7 +37,7 @@ export function ReminderSettingsCard({
 
   return (
     <div className="space-y-4">
-      <label className="flex items-center gap-3 text-sm text-walnut">
+      <label className="flex items-center gap-3 text-sm text-charcoal">
         <input checked={enabled} onChange={(e) => setEnabled(e.target.checked)} type="checkbox" />
         Enable nudges
       </label>
@@ -52,7 +52,7 @@ export function ReminderSettingsCard({
         <input className="field" onChange={(e) => setNudges(e.target.value)} placeholder="11:00, 14:00, 16:30" value={nudges} />
       </label>
 
-      <label className="flex items-center gap-3 text-sm text-walnut">
+      <label className="flex items-center gap-3 text-sm text-charcoal">
         <input checked={workdaysOnly} onChange={(e) => setWorkdaysOnly(e.target.checked)} type="checkbox" />
         Workdays only
       </label>

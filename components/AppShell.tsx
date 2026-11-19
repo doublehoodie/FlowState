@@ -7,8 +7,9 @@ import { signOut } from "@/services/authService";
 
 const links = [
   { href: "/dashboard", label: "Today" },
-  { href: "/calendar", label: "Week" },
   { href: "/tasks", label: "Tasks" },
+  { href: "/goals", label: "Goals" },
+  { href: "/calendar", label: "Week" },
   { href: "/feedback", label: "Feedback" }
 ];
 
@@ -22,28 +23,28 @@ export function AppShell({ children, title }: { children: React.ReactNode; title
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col px-4 pb-24 pt-6 sm:px-6">
-      <header className="mb-8 flex items-end justify-between gap-4 border-b border-stone pb-5">
+    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-5 pb-24 pt-8 sm:px-6">
+      <header className="mb-10 flex items-baseline justify-between gap-4">
         <div className="space-y-1">
-          <p className="font-brand text-lg text-clay">FlowState</p>
-          <h1 className="text-3xl font-semibold tracking-tight text-bark">{title}</h1>
-          {isDemoMode ? <p className="text-sm text-mist">Demo · data stays in this browser</p> : null}
+          <p className="text-sm text-mist">FlowState</p>
+          <h1 className="text-2xl font-medium tracking-tight text-charcoal">{title}</h1>
+          {isDemoMode ? <p className="text-sm text-mist">Demo · browser only</p> : null}
         </div>
         <button className="text-button" onClick={handleSignOut} type="button">
-          {isDemoMode ? "Reset demo" : "Log out"}
+          {isDemoMode ? "Reset" : "Log out"}
         </button>
       </header>
 
       <section className="flex-1">{children}</section>
 
-      <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-stone bg-paper/95 backdrop-blur">
-        <div className="mx-auto flex max-w-3xl">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-linen bg-paper">
+        <div className="mx-auto flex max-w-2xl">
           {links.map((link) => {
             const active = pathname === link.href || (link.href !== "/dashboard" && pathname.startsWith(link.href));
             return (
               <Link
-                className={`flex-1 py-3.5 text-center text-sm font-medium transition ${
-                  active ? "border-t-2 border-clay text-bark" : "border-t-2 border-transparent text-mist hover:text-walnut"
+                className={`flex-1 py-3.5 text-center text-sm transition ${
+                  active ? "text-charcoal" : "text-mist hover:text-charcoal"
                 }`}
                 href={link.href}
                 key={link.href}

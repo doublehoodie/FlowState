@@ -15,8 +15,8 @@ function ScoreRow({ label, value, onChange }: { label: string; value: number; on
       <div className="grid grid-cols-5 gap-1.5">
         {scores.map((score) => (
           <button
-            className={`rounded-control py-2 text-sm font-medium ${
-              value === score ? "bg-clay text-white" : "border border-stone bg-paper text-walnut"
+            className={`border py-2.5 text-sm transition ${
+              value === score ? "border-clay bg-clay text-white" : "border-linen bg-paper text-charcoal"
             }`}
             key={score}
             onClick={() => onChange(score)}
@@ -56,8 +56,8 @@ export function CheckInCard({
       <div className="flex gap-2">
         {(["midday", "eod"] as CheckInKind[]).map((value) => (
           <button
-            className={`rounded-control px-3 py-1.5 text-sm font-medium ${
-              kind === value ? "bg-walnut text-paper" : "border border-stone text-mist"
+            className={`border px-3 py-1.5 text-sm transition ${
+              kind === value ? "border-charcoal bg-charcoal text-paper" : "border-linen text-mist"
             }`}
             key={value}
             onClick={() => setKind(value)}

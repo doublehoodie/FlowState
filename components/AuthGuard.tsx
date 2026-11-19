@@ -34,7 +34,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   if (!ready) {
-    return <div className="card text-center text-moss">Warming up your schedule...</div>;
+    return <p className="p-6 text-center text-sm text-mist">Loading…</p>;
   }
 
   return <>{children}</>;

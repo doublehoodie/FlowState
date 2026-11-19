@@ -9,10 +9,10 @@ export type TaskFormValues = NewTaskInput & {
   manual_start_time?: string;
 };
 
-const taskTypes: Array<{ value: TaskType; label: string; helper: string; best: string }> = [
-  { value: "deep", label: "Deep", helper: "Focus-heavy work", best: "Best in morning" },
-  { value: "shallow", label: "Shallow", helper: "Lighter effort", best: "Best in afternoon" },
-  { value: "admin", label: "Admin", helper: "Maintenance", best: "Best in evening" }
+const taskTypes: Array<{ value: TaskType; label: string; best: string }> = [
+  { value: "deep", label: "Deep", best: "Morning" },
+  { value: "shallow", label: "Shallow", best: "Afternoon" },
+  { value: "admin", label: "Admin", best: "Evening" }
 ];
 
 const defaultByType: Record<TaskType, string> = {
@@ -65,18 +65,18 @@ export function TaskForm({
   }
 
   return (
-    <form className="card space-y-4" onSubmit={handleSubmit}>
+    <form className="space-y-5 rounded-panel border border-stone bg-white/70 p-5" onSubmit={handleSubmit}>
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-2xl font-black tracking-[-0.04em]">Task details</h2>
+        <h2 className="section-title">New task</h2>
         {onCancel ? (
-          <button className="text-sm font-bold text-moss underline-offset-4 hover:underline" onClick={onCancel} type="button">
+          <button className="text-button" onClick={onCancel} type="button">
             Cancel
           </button>
         ) : null}
       </div>
 
       <label className="block space-y-2">
-        <span className="text-sm font-bold text-ink">Task title</span>
+        <span className="label">Title</span>
         <input
           className="field"
           onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
@@ -89,24 +89,23 @@ export function TaskForm({
       <div className="grid grid-cols-3 gap-2">
         {taskTypes.map((type) => (
           <button
-            className={`rounded-2xl border p-3 text-left transition ${
-              form.type === type.value ? "border-ink bg-ink text-cream" : "border-oat bg-cream/70 text-ink"
+            className={`rounded-control border p-3 text-left transition ${
+              form.type === type.value ? "border-clay bg-clay/10 text-bark" : "border-stone bg-paper text-walnut"
             }`}
             key={type.value}
             onClick={() => setForm((current) => ({ ...current, type: type.value }))}
             type="button"
           >
-            <span className="block text-sm font-black">{type.label}</span>
-            <span className="mt-0.5 block text-[10px] font-bold uppercase tracking-[0.12em] opacity-90">{type.best}</span>
-            <span className="mt-1 block text-[11px] opacity-75">{type.helper}</span>
+            <span className="block text-sm font-semibold">{type.label}</span>
+            <span className="mt-1 block text-xs text-mist">{type.best}</span>
           </button>
         ))}
       </div>
 
       <label className="block space-y-2">
-        <span className="text-sm font-bold text-ink">Estimated duration: {form.estimated_duration} min</span>
+        <span className="label">Duration · {form.estimated_duration} min</span>
         <input
-          className="w-full accent-ember"
+          className="w-full accent-clay"
           max={240}
           min={15}
           onChange={(event) => setForm((current) => ({ ...current, estimated_duration: Number(event.target.value) }))}
@@ -117,45 +116,37 @@ export function TaskForm({
       </label>
 
       {showScheduling ? (
-        <section className="space-y-3 rounded-[1.5rem] border border-oat/80 bg-cream/60 p-3">
-          <p className="text-sm font-bold uppercase tracking-[0.16em] text-moss">Scheduling</p>
-          <div className="grid gap-2 sm:grid-cols-3">
-            {([
-              ["auto", "Auto-schedule", `Places ${form.type} work in ${bucket.label.toLowerCase()} first.`],
-              ["manual", "Manual placement", "Choose a start time yourself."],
-              ["unscheduled", "Unscheduled", "Save without a time block today."]
-            ] as Array<[SchedulingMode, string, string]>).map(([mode, label, helper]) => (
+        <section className="space-y-3 border-t border-stone pt-4">
+          <p className="label">Scheduling</p>
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                ["auto", "Auto"],
+                ["manual", "Manual"],
+                ["unscheduled", "Later"]
+              ] as Array<[SchedulingMode, string]>
+            ).map(([mode, label]) => (
               <button
-                className={`rounded-2xl border p-3 text-left transition ${
-                  form.scheduling_mode === mode ? "border-ink bg-white text-ink shadow-soft" : "border-oat bg-white/40 text-ink/75"
-                }`}
+                className={`chip ${form.scheduling_mode === mode ? "chip-active" : ""}`}
                 key={mode}
                 onClick={() => setForm((current) => ({ ...current, scheduling_mode: mode }))}
                 type="button"
               >
-                <span className="block text-sm font-black">{label}</span>
-                <span className="mt-1 block text-xs leading-5">{helper}</span>
+                {label}
               </button>
             ))}
           </div>
 
           {form.scheduling_mode === "auto" ? (
-            <div className="rounded-2xl border border-oat/60 bg-white/50 px-4 py-3 text-xs leading-relaxed text-moss">
-              <p className="font-bold text-ink/80">Auto-schedule defaults</p>
-              <ul className="mt-2 list-inside list-disc space-y-1">
-                <li>Deep work defaults to morning</li>
-                <li>Shallow work defaults to afternoon</li>
-                <li>Admin tasks default to evening</li>
-              </ul>
-              <p className="mt-2 text-[11px] text-moss/90">If a bucket is full, FlowState tries the next reasonable slot.</p>
-            </div>
+            <p className="text-sm text-mist">
+              Auto places {form.type} work in the {bucket.label.toLowerCase()} first, then nearby buckets if needed.
+            </p>
           ) : null}
 
           {form.scheduling_mode === "manual" ? (
-            <div className="space-y-3 rounded-2xl border border-dashed border-oat bg-white/40 p-3">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-moss">Placement detail (optional)</p>
+            <div className="space-y-3">
               <label className="block space-y-2">
-                <span className="text-sm font-bold text-ink">Start time</span>
+                <span className="label">Start time</span>
                 <input
                   className="field"
                   onChange={(event) => setForm((current) => ({ ...current, manual_start_time: event.target.value }))}
@@ -163,33 +154,28 @@ export function TaskForm({
                   value={form.manual_start_time ?? "09:00"}
                 />
               </label>
-              <div className="space-y-2">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-moss">Quick picks</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {manualSlots.map((slot) => (
-                    <button
-                      className={`rounded-2xl border px-3 py-3 text-sm font-bold transition ${
-                        form.manual_start_time === slot ? "border-ember bg-ember text-white" : "border-oat bg-white/50 text-ink"
-                      }`}
-                      key={slot}
-                      onClick={() => setForm((current) => ({ ...current, manual_start_time: slot }))}
-                      type="button"
-                    >
-                      {slot}
-                    </button>
-                  ))}
-                </div>
+              <div className="flex flex-wrap gap-2">
+                {manualSlots.map((slot) => (
+                  <button
+                    className={`chip ${form.manual_start_time === slot ? "chip-active" : ""}`}
+                    key={slot}
+                    onClick={() => setForm((current) => ({ ...current, manual_start_time: slot }))}
+                    type="button"
+                  >
+                    {slot}
+                  </button>
+                ))}
               </div>
-              <p className="rounded-2xl bg-white/60 px-4 py-3 text-sm text-moss">
-                Block from {form.manual_start_time ?? "09:00"} to {manualEndPreview || "end"}.
+              <p className="text-sm text-mist">
+                {form.manual_start_time ?? "09:00"} → {manualEndPreview || "end"}
               </p>
             </div>
           ) : null}
         </section>
       ) : null}
 
-      <button className="primary-button w-full" disabled={saving} type="submit">
-        {saving ? "Saving..." : submitLabel}
+      <button className="primary-button" disabled={saving} type="submit">
+        {saving ? "Saving…" : submitLabel}
       </button>
     </form>
   );

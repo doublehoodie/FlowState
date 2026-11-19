@@ -40,7 +40,6 @@ function CalendarContent() {
       })
       .catch((caught) => setError(caught instanceof Error ? caught.message : "Could not load calendar."))
       .finally(() => setLoading(false));
-    // intentionally load once for user; week changes handled below
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -53,17 +52,11 @@ function CalendarContent() {
   }, [anchor, userId]);
 
   return (
-    <AppShell eyebrow="Horizon" title="Calendar">
-      <div className="space-y-5">
-        <section className="card">
-          <p className="text-sm font-bold uppercase tracking-[0.18em] text-moss">This week</p>
-          <h2 className="mt-1 text-3xl font-black tracking-[-0.04em]">{rangeLabel}</h2>
-          <p className="mt-2 text-sm text-moss">Tap a day to open Today for that date — goals, schedule, and check-ins.</p>
-        </section>
-
-        {error ? <p className="rounded-2xl bg-ember/10 px-4 py-3 text-sm text-ember">{error}</p> : null}
-        {loading ? <div className="card text-center text-moss">Loading week…</div> : null}
-
+    <AppShell title="Week">
+      <div className="space-y-6">
+        <p className="text-sm text-mist">{rangeLabel}</p>
+        {error ? <p className="rounded-control border border-clay/30 bg-clay/10 px-4 py-3 text-sm text-clay-deep">{error}</p> : null}
+        {loading ? <p className="text-sm text-mist">Loading…</p> : null}
         <WeekBoard
           anchor={anchor}
           blocks={blocks}

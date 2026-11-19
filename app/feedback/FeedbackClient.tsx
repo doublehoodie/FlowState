@@ -11,16 +11,16 @@ const scores = [1, 2, 3, 4, 5];
 
 function ScorePicker({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-bold uppercase tracking-[0.16em] text-moss">{label}</span>
-        <span className="rounded-full bg-ink px-3 py-1 text-sm font-black text-cream">{value}/5</span>
+        <span className="label">{label}</span>
+        <span className="text-sm text-mist">{value}/5</span>
       </div>
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-5 gap-1.5">
         {scores.map((score) => (
           <button
-            className={`aspect-square rounded-2xl text-xl font-black transition ${
-              value === score ? "bg-ember text-white shadow-soft" : "bg-cream text-ink hover:bg-oat"
+            className={`rounded-control py-3 text-sm font-medium transition ${
+              value === score ? "bg-clay text-white" : "border border-stone bg-paper text-walnut"
             }`}
             key={score}
             onClick={() => onChange(score)}
@@ -59,25 +59,22 @@ function FeedbackContent() {
   }
 
   return (
-    <AppShell eyebrow="Two taps" title="Feedback">
+    <AppShell title="Feedback">
       {!blockId ? (
-        <section className="card space-y-4 text-center">
-          <h2 className="text-2xl font-black tracking-[-0.04em]">Pick a task first</h2>
-          <p className="text-moss">Feedback attaches to a scheduled block so FlowState can learn the right task type and time bucket.</p>
-          <Link className="primary-button w-full" href="/dashboard">
-            Go to schedule
+        <section className="space-y-4">
+          <p className="section-copy">Pick a scheduled block first so feedback can update the right time bucket.</p>
+          <Link className="primary-button inline-flex" href="/dashboard">
+            Go to Today
           </Link>
         </section>
       ) : (
-        <section className="card space-y-6">
-          <p className="text-base leading-7 text-ink/75">
-            Quick pulse check. Higher focus and lower distraction will make this kind of task more likely in this time bucket.
-          </p>
+        <section className="space-y-6">
+          <p className="section-copy">How was focus and distraction for this block?</p>
           <ScorePicker label="Focus" onChange={setFocus} value={focus} />
           <ScorePicker label="Distraction" onChange={setDistraction} value={distraction} />
-          {error ? <p className="rounded-2xl bg-ember/10 px-4 py-3 text-sm text-ember">{error}</p> : null}
-          <button className="primary-button w-full" disabled={saving} onClick={handleSubmit} type="button">
-            {saving ? "Learning..." : "Save feedback"}
+          {error ? <p className="rounded-control border border-clay/30 bg-clay/10 px-4 py-3 text-sm text-clay-deep">{error}</p> : null}
+          <button className="primary-button" disabled={saving} onClick={handleSubmit} type="button">
+            {saving ? "Saving…" : "Save feedback"}
           </button>
         </section>
       )}

@@ -27,7 +27,7 @@ export function ReminderSettingsCard({
       .map((part) => part.trim())
       .filter(Boolean);
     await onSave({ enabled, morning_time: morning, nudge_times, workdays_only: workdaysOnly });
-    setMessage("Reminder preferences saved. Keep this tab open (or install as PWA later) for browser nudges.");
+    setMessage("Saved. Keep FlowState open for browser nudges.");
   }
 
   async function handlePermission() {
@@ -36,44 +36,36 @@ export function ReminderSettingsCard({
   }
 
   return (
-    <section className="card space-y-4">
-      <div>
-        <p className="text-sm font-bold uppercase tracking-[0.18em] text-moss">Nudges</p>
-        <h2 className="mt-1 text-2xl font-black tracking-[-0.04em]">Reminders through the day</h2>
-        <p className="mt-2 text-sm text-moss">
-          Morning: set SMART goals. Later: refocus on them. Browser notifications fire while FlowState is open.
-        </p>
-      </div>
-
-      <label className="flex items-center gap-3 text-sm font-bold">
+    <div className="space-y-4">
+      <label className="flex items-center gap-3 text-sm text-walnut">
         <input checked={enabled} onChange={(e) => setEnabled(e.target.checked)} type="checkbox" />
         Enable nudges
       </label>
 
       <label className="block space-y-2">
-        <span className="text-sm font-bold">Morning goal nudge</span>
+        <span className="label">Morning goal nudge</span>
         <input className="field" onChange={(e) => setMorning(e.target.value)} type="time" value={morning} />
       </label>
 
       <label className="block space-y-2">
-        <span className="text-sm font-bold">In-day refocus times (comma-separated HH:MM)</span>
-        <input className="field" onChange={(e) => setNudges(e.target.value)} value={nudges} />
+        <span className="label">Refocus times</span>
+        <input className="field" onChange={(e) => setNudges(e.target.value)} placeholder="11:00, 14:00, 16:30" value={nudges} />
       </label>
 
-      <label className="flex items-center gap-3 text-sm font-bold">
+      <label className="flex items-center gap-3 text-sm text-walnut">
         <input checked={workdaysOnly} onChange={(e) => setWorkdaysOnly(e.target.checked)} type="checkbox" />
         Workdays only
       </label>
 
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <button className="secondary-button w-full" onClick={handlePermission} type="button">
-          Allow browser notifications
+      <div className="flex flex-wrap gap-3">
+        <button className="secondary-button" onClick={handlePermission} type="button">
+          Allow notifications
         </button>
-        <button className="primary-button w-full" disabled={saving} onClick={handleSave} type="button">
-          Save reminders
+        <button className="primary-button" disabled={saving} onClick={handleSave} type="button">
+          Save
         </button>
       </div>
-      {message ? <p className="text-sm text-moss">{message}</p> : null}
-    </section>
+      {message ? <p className="text-sm text-mist">{message}</p> : null}
+    </div>
   );
 }

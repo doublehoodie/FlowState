@@ -59,46 +59,45 @@ function DayTimeline({ blocks, dateKey }: { blocks: ScheduleBlock[]; dateKey: st
   }
 
   return (
-    <section className="card space-y-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <section className="space-y-3">
+      <div className="flex items-end justify-between gap-3">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.18em] text-moss">Day view</p>
-          <h2 className="mt-1 text-2xl font-black tracking-[-0.04em]">Scheduled blocks</h2>
-          <p className="mt-2 text-sm text-moss">Tap empty calendar space to add a task for this day.</p>
+          <h2 className="section-title">Schedule</h2>
+          <p className="section-copy mt-1">Tap empty space to add a task.</p>
         </div>
-        <span className="w-fit rounded-full bg-cream px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-moss">9 AM - 9 PM</span>
+        <span className="chip">9 AM – 9 PM</span>
       </div>
-      <div className="relative grid min-h-[620px] grid-cols-[4rem_1fr] gap-3 overflow-hidden rounded-[1.5rem] bg-cream/60 p-3">
-        <div className="space-y-0">
+
+      <div className="relative grid min-h-[560px] grid-cols-[3.25rem_1fr] gap-2 overflow-hidden rounded-panel border border-stone bg-white/70 p-3">
+        <div>
           {timelineHours.map((hour) => (
-            <div className="h-[50px] text-xs font-bold text-moss" key={hour}>
-              {hour > 12 ? hour - 12 : hour} {hour >= 12 ? "PM" : "AM"}
+            <div className="h-[46px] text-xs text-mist" key={hour}>
+              {hour > 12 ? hour - 12 : hour}
+              {hour >= 12 ? "p" : "a"}
             </div>
           ))}
         </div>
-        <div className="relative cursor-pointer border-l border-oat/80" onClick={handleTimelineClick}>
+        <div className="relative cursor-pointer border-l border-stone" onClick={handleTimelineClick}>
           {timelineHours.map((hour) => (
-            <div className="h-[50px] border-t border-oat/70" key={hour} />
+            <div className="h-[46px] border-t border-stone/70" key={hour} />
           ))}
           {blocks.length === 0 ? (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center">
-              <p className="text-sm font-bold text-moss/90">No tasks scheduled yet. Tap to add one.</p>
+              <p className="text-sm text-mist">Nothing scheduled yet.</p>
             </div>
           ) : null}
           {blocks.map((block) => (
             <Link
-              className="absolute left-3 right-1 z-[2] rounded-2xl border border-white/70 bg-ink p-3 text-cream shadow-soft transition hover:-translate-y-0.5 hover:bg-moss"
+              className="absolute left-2 right-1 z-[2] rounded-control border border-stone bg-walnut px-3 py-2 text-paper transition hover:bg-bark"
               data-scheduled-task
               href={`/feedback?block=${block.id}`}
               key={block.id}
               onClick={(e) => e.stopPropagation()}
               style={blockPosition(block)}
             >
-              <span className="mb-1 inline-block rounded-full bg-cream/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cream/90">
-                {placementBadge(block)}
-              </span>
-              <span className="block truncate text-sm font-black">{block.task?.title ?? "Untitled task"}</span>
-              <span className="mt-1 block text-xs text-cream/75">{formatTimeRange(block.start_time, block.end_time)}</span>
+              <span className="mb-1 inline-block text-[10px] text-paper/70">{placementBadge(block)}</span>
+              <span className="block truncate text-sm font-medium">{block.task?.title ?? "Untitled"}</span>
+              <span className="mt-0.5 block text-xs text-paper/70">{formatTimeRange(block.start_time, block.end_time)}</span>
             </Link>
           ))}
         </div>
@@ -121,6 +120,7 @@ function DashboardContent() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showRhythm, setShowRhythm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -159,7 +159,7 @@ function DashboardContent() {
     try {
       await generateAndSaveDailySchedule(userId);
       await refresh(userId, dateKey);
-      setNotice("Day regenerated from tasks and learned performance metrics.");
+      setNotice("Schedule regenerated from your metrics.");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not generate schedule.");
     } finally {
@@ -175,36 +175,30 @@ function DashboardContent() {
   const dayLabel = formatDayLabel(parseDateKey(dateKey));
 
   return (
-    <AppShell eyebrow="Daily rhythm" title={viewingToday ? "Today" : dayLabel}>
+    <AppShell title={viewingToday ? "Today" : dayLabel}>
       <NudgeRunner prefs={viewingToday ? prefs : null} />
-      <div className="space-y-5">
-        <section className="card space-y-4 overflow-hidden relative">
-          <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-ember/15" />
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-moss">Progress · {dateKey}</p>
-              <p className="mt-2 text-4xl font-black tracking-[-0.05em]">{completion}%</p>
-            </div>
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-              <Link className="secondary-button w-full text-center sm:w-auto" href="/calendar">
-                Week calendar
-              </Link>
-              <Link className="primary-button w-full text-center sm:w-auto" href={`/tasks?source=today&date=${dateKey}`}>
-                + Add Task
-              </Link>
-              <button className="secondary-button w-full sm:w-auto" disabled={generating} onClick={handleGenerate} type="button">
-                {generating ? "Generating" : "Regenerate Day"}
-              </button>
-            </div>
-          </div>
-          <p className="relative text-sm leading-6 text-ink/70">
-            Research loop: morning SMART goals → daytime nudges → schedule deep work when your metrics say you’re strongest → check in on flow.
+      <div className="space-y-8">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-mist">
+            {dateKey}
+            {blocks.length ? ` · ${completion}% complete` : ""}
           </p>
-        </section>
+          <div className="flex flex-wrap gap-2">
+            <Link className="text-button" href="/calendar">
+              Week
+            </Link>
+            <Link className="secondary-button px-3 py-2 text-sm" href={`/tasks?source=today&date=${dateKey}`}>
+              Add task
+            </Link>
+            <button className="text-button" disabled={generating} onClick={handleGenerate} type="button">
+              {generating ? "Generating…" : "Regenerate"}
+            </button>
+          </div>
+        </div>
 
-        {error ? <p className="rounded-2xl bg-ember/10 px-4 py-3 text-sm text-ember">{error}</p> : null}
-        {notice ? <p className="rounded-2xl bg-moss/10 px-4 py-3 text-sm text-moss">{notice}</p> : null}
-        {loading ? <div className="card text-center text-moss">Loading today...</div> : null}
+        {error ? <p className="rounded-control border border-clay/30 bg-clay/10 px-4 py-3 text-sm text-clay-deep">{error}</p> : null}
+        {notice ? <p className="rounded-control border border-success/20 bg-success/10 px-4 py-3 text-sm text-success">{notice}</p> : null}
+        {loading ? <p className="text-sm text-mist">Loading…</p> : null}
 
         {!loading && userId ? (
           <DailyGoalsCard
@@ -215,7 +209,7 @@ function DashboardContent() {
               try {
                 const carried = await carryOpenGoalsForward(userId, dateKey);
                 setGoals(await listGoalsForDate(userId, dateKey));
-                setNotice(carried.length ? `Carried ${carried.length} open goal(s) forward.` : "Nothing to carry (today already has goals, or yesterday was clear).");
+                setNotice(carried.length ? `Carried ${carried.length} open goal(s).` : "Nothing to carry.");
               } catch (caught) {
                 setError(caught instanceof Error ? caught.message : "Could not carry goals.");
               } finally {
@@ -238,65 +232,28 @@ function DashboardContent() {
           />
         ) : null}
 
-        {!loading && userId && prefs ? (
-          <ReminderSettingsCard
-            prefs={prefs}
-            saving={saving}
-            onEnableNotifications={requestNotificationPermission}
-            onSave={async (patch) => {
-              setSaving(true);
-              try {
-                const next = await saveReminderPreferences(userId, patch);
-                setPrefs(next);
-              } finally {
-                setSaving(false);
-              }
-            }}
-          />
-        ) : null}
-
-        {!loading && userId ? (
-          <CheckInCard
-            checkIns={checkIns}
-            saving={saving}
-            onSubmit={async (input) => {
-              setSaving(true);
-              try {
-                await submitCheckIn(userId, dateKey, input);
-                setCheckIns(await listCheckInsForDate(userId, dateKey));
-              } finally {
-                setSaving(false);
-              }
-            }}
-          />
-        ) : null}
-
         {!loading ? <DayTimeline blocks={blocks} dateKey={dateKey} /> : null}
 
         {!loading ? (
           <section className="space-y-3">
             {blocks.map((block) => (
-              <article className="card" key={block.id}>
+              <article className="rounded-panel border border-stone bg-white/70 p-4" key={block.id}>
                 <div className="flex gap-4">
-                  <div className="flex w-20 shrink-0 flex-col items-center rounded-3xl bg-cream p-3 text-center">
-                    <span className="text-xs font-bold uppercase tracking-[0.16em] text-moss">{getTimeOfDayBucket(block.start_time)}</span>
-                    <span className="mt-2 h-3 w-3 rounded-full bg-ember" />
+                  <div className="w-16 shrink-0 text-center">
+                    <p className="text-xs text-mist">{getTimeOfDayBucket(block.start_time)}</p>
+                    <div className="mx-auto mt-2 h-2 w-2 rounded-full bg-clay" />
                   </div>
-                  <div className="min-w-0 flex-1 space-y-3">
-                    <div>
-                      <p className="text-sm font-bold text-moss">{formatTimeRange(block.start_time, block.end_time)}</p>
-                      <h2 className="mt-1 text-xl font-black tracking-[-0.035em]">{block.task?.title ?? "Untitled task"}</h2>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-sage/20 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-moss">{block.task?.type}</span>
-                      <span className="rounded-full bg-ink/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-ink/80">{placementBadge(block)}</span>
-                      <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] ${block.completed ? "bg-moss text-cream" : "bg-oat/70 text-ink"}`}>
-                        {block.completed ? "Complete" : "Ready"}
-                      </span>
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <p className="text-sm text-mist">{formatTimeRange(block.start_time, block.end_time)}</p>
+                    <h2 className="text-lg font-semibold text-bark">{block.task?.title ?? "Untitled"}</h2>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="chip">{block.task?.type}</span>
+                      <span className="chip">{placementBadge(block)}</span>
+                      <span className={`chip ${block.completed ? "chip-active" : ""}`}>{block.completed ? "Done" : "Ready"}</span>
                     </div>
                     {!block.completed ? (
-                      <Link className="primary-button w-full" href={`/feedback?block=${block.id}`}>
-                        Start Task
+                      <Link className="primary-button mt-2 inline-flex" href={`/feedback?block=${block.id}`}>
+                        Start
                       </Link>
                     ) : null}
                   </div>
@@ -307,18 +264,63 @@ function DashboardContent() {
         ) : null}
 
         {!loading && pendingTasks.length > 0 ? (
-          <section className="card space-y-3">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-ember">Pending</p>
-              <h2 className="mt-1 text-2xl font-black tracking-[-0.04em]">Unscheduled tasks</h2>
-            </div>
+          <section className="space-y-2">
+            <h2 className="section-title">Unscheduled</h2>
             {pendingTasks.map((task) => (
-              <div className="rounded-2xl border border-oat bg-cream/60 p-4" key={task.id}>
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-ember">{task.type}</p>
-                <h3 className="mt-1 text-lg font-black tracking-[-0.03em]">{task.title}</h3>
-                <p className="mt-1 text-sm text-moss">{task.estimated_duration} minutes</p>
+              <div className="rounded-panel border border-stone bg-white/70 px-4 py-3" key={task.id}>
+                <p className="text-sm font-medium text-bark">{task.title}</p>
+                <p className="text-xs text-mist">
+                  {task.type} · {task.estimated_duration} min
+                </p>
               </div>
             ))}
+          </section>
+        ) : null}
+
+        {!loading && userId && prefs ? (
+          <section className="border-t border-stone pt-4">
+            <button className="text-button" onClick={() => setShowRhythm((v) => !v)} type="button">
+              {showRhythm ? "Hide reminders & check-ins" : "Reminders & check-ins"}
+            </button>
+            {showRhythm ? (
+              <div className="mt-4 space-y-8 rounded-panel border border-stone bg-white/70 p-4">
+                <div>
+                  <h3 className="text-base font-semibold text-bark">Reminders</h3>
+                  <p className="section-copy mt-1 mb-3">Morning goal nudge and daytime refocus.</p>
+                  <ReminderSettingsCard
+                    prefs={prefs}
+                    saving={saving}
+                    onEnableNotifications={requestNotificationPermission}
+                    onSave={async (patch) => {
+                      setSaving(true);
+                      try {
+                        const next = await saveReminderPreferences(userId, patch);
+                        setPrefs(next);
+                      } finally {
+                        setSaving(false);
+                      }
+                    }}
+                  />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-bark">Check-in</h3>
+                  <p className="section-copy mt-1 mb-3">A quick pulse on flow, stress, and progress.</p>
+                  <CheckInCard
+                    checkIns={checkIns}
+                    saving={saving}
+                    onSubmit={async (input) => {
+                      setSaving(true);
+                      try {
+                        await submitCheckIn(userId, dateKey, input);
+                        setCheckIns(await listCheckInsForDate(userId, dateKey));
+                      } finally {
+                        setSaving(false);
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            ) : null}
           </section>
         ) : null}
       </div>
@@ -329,7 +331,7 @@ function DashboardContent() {
 export default function DashboardPage() {
   return (
     <AuthGuard>
-      <Suspense fallback={<div className="card py-10 text-center text-moss">Loading today…</div>}>
+      <Suspense fallback={<p className="p-6 text-sm text-mist">Loading…</p>}>
         <DashboardContent />
       </Suspense>
     </AuthGuard>

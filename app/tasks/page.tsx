@@ -106,8 +106,8 @@ function TasksContent() {
   const formKey = editingTask?.id ?? `new-${searchParams.toString()}`;
 
   return (
-    <AppShell eyebrow="Input queue" title="Tasks">
-      <div className="space-y-5">
+    <AppShell title="Tasks">
+      <div className="space-y-6">
         <TaskForm
           initialValue={initialForm}
           key={formKey}
@@ -118,24 +118,24 @@ function TasksContent() {
           submitLabel={editingTask ? "Save changes" : "Add task"}
         />
 
-        {error ? <p className="rounded-2xl bg-ember/10 px-4 py-3 text-sm text-ember">{error}</p> : null}
-        {notice ? <p className="rounded-2xl bg-moss/10 px-4 py-3 text-sm text-moss">{notice}</p> : null}
-        {loading ? <div className="card text-center text-moss">Loading tasks...</div> : null}
+        {error ? <p className="rounded-control border border-clay/30 bg-clay/10 px-4 py-3 text-sm text-clay-deep">{error}</p> : null}
+        {notice ? <p className="rounded-control border border-success/20 bg-success/10 px-4 py-3 text-sm text-success">{notice}</p> : null}
+        {loading ? <p className="text-sm text-mist">Loading…</p> : null}
 
-        <section className="space-y-3">
+        <section className="space-y-2">
           {tasks.map((task) => (
-            <article className="card space-y-3" key={task.id}>
+            <article className="rounded-panel border border-stone bg-white/70 px-4 py-3" key={task.id}>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-ember">{task.type}</p>
-                  <h3 className="mt-1 text-xl font-black tracking-[-0.035em]">{task.title}</h3>
-                  <p className="mt-1 text-sm text-moss">{task.estimated_duration} minutes</p>
+                  <p className="text-xs text-mist">{task.type}</p>
+                  <h3 className="mt-1 text-base font-semibold text-bark">{task.title}</h3>
+                  <p className="mt-1 text-sm text-mist">{task.estimated_duration} minutes</p>
                 </div>
-                <div className="flex gap-2">
-                  <button className="secondary-button px-3 py-2 text-xs" onClick={() => setEditingTask(task)} type="button">
+                <div className="flex gap-3">
+                  <button className="text-button" onClick={() => setEditingTask(task)} type="button">
                     Edit
                   </button>
-                  <button className="secondary-button px-3 py-2 text-xs text-ember" onClick={() => handleDelete(task.id)} type="button">
+                  <button className="text-button text-clay" onClick={() => handleDelete(task.id)} type="button">
                     Delete
                   </button>
                 </div>
@@ -151,7 +151,7 @@ function TasksContent() {
 export default function TasksPage() {
   return (
     <AuthGuard>
-      <Suspense fallback={<div className="card py-10 text-center text-moss">Loading tasks…</div>}>
+      <Suspense fallback={<p className="p-6 text-sm text-mist">Loading…</p>}>
         <TasksContent />
       </Suspense>
     </AuthGuard>

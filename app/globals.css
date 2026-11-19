@@ -4,9 +4,13 @@
 
 :root {
   color-scheme: light;
-  --grain: radial-gradient(circle at 20% 20%, rgba(213, 111, 62, 0.13), transparent 28%),
-    radial-gradient(circle at 80% 8%, rgba(72, 101, 83, 0.14), transparent 34%),
-    linear-gradient(135deg, #f7f1e5 0%, #efe1ca 55%, #d7e0ca 100%);
+  --paper: #f4eee6;
+  --stone: #e8dfd4;
+  --clay: #c96a3d;
+  --walnut: #5c4033;
+  --bark: #3d2e26;
+  --mist: #9a8b7a;
+  --success: #5f7355;
 }
 
 * {
@@ -15,37 +19,65 @@
 
 html {
   min-height: 100%;
-  background: #f7f1e5;
+  background: var(--paper);
 }
 
 body {
   min-height: 100%;
   margin: 0;
-  background: var(--grain);
-  color: #17211b;
-  font-family: Georgia, Cambria, "Times New Roman", serif;
+  background:
+    linear-gradient(180deg, rgba(232, 223, 212, 0.45) 0%, transparent 28%),
+    var(--paper);
+  color: var(--walnut);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
 @layer components {
   .card {
-    @apply rounded-[2rem] border border-white/60 bg-white/70 p-5 shadow-soft backdrop-blur;
+    @apply rounded-panel border border-stone bg-white/80 p-5 shadow-soft;
   }
 
   .field {
-    @apply w-full rounded-2xl border border-oat/80 bg-cream/80 px-4 py-3 text-base text-ink outline-none transition focus:border-moss focus:ring-4 focus:ring-sage/25;
+    @apply w-full rounded-control border border-stone bg-paper px-4 py-3 text-base text-walnut outline-none transition placeholder:text-mist focus:border-clay focus:ring-2 focus:ring-clay/20;
   }
 
   .primary-button {
-    @apply inline-flex items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-bold uppercase tracking-[0.18em] text-cream transition hover:-translate-y-0.5 hover:bg-moss disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-control bg-clay px-5 py-3 text-sm font-semibold text-white transition hover:bg-clay-deep disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .secondary-button {
-    @apply inline-flex items-center justify-center rounded-full border border-moss/30 bg-white/50 px-5 py-3 text-sm font-bold uppercase tracking-[0.16em] text-ink transition hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-control border border-stone bg-transparent px-5 py-3 text-sm font-semibold text-walnut transition hover:bg-stone/60 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .text-button {
+    @apply text-sm font-medium text-mist underline-offset-4 transition hover:text-walnut hover:underline disabled:opacity-50;
+  }
+
+  .section-title {
+    @apply text-xl font-semibold tracking-tight text-bark;
+  }
+
+  .section-copy {
+    @apply text-sm leading-6 text-mist;
+  }
+
+  .label {
+    @apply text-sm font-medium text-walnut;
+  }
+
+  .chip {
+    @apply inline-flex items-center rounded-control border border-stone bg-paper px-2.5 py-1 text-xs font-medium text-mist;
+  }
+
+  .chip-active {
+    @apply border-clay/30 bg-clay/10 text-clay-deep;
   }
 }
